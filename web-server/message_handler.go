@@ -168,10 +168,10 @@ func (h *MessageHandler) GetMessageHistory(c *gin.Context) {
 	offset := (page - 1) * limit
 
 	query := `
-		SELECT m.id, m.sender_id, m.content, m.message_type, m.media_url, m.media_type, m.created_at, u.username
+		SELECT DISTINCT m.id, m.sender_id, m.content, m.message_type, m.media_url, m.media_type, m.created_at, u.username
 		FROM messages m
 		JOIN users u ON m.sender_id = u.id
-		JOIN message_recipients mr ON m.id = mr.message_id
+		LEFT JOIN message_recipients mr ON m.id = mr.message_id
 		WHERE mr.recipient_id = ? OR m.sender_id = ?
 	`
 

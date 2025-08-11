@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Notification Container -->
+    <div id="notificationContainer" class="notification-container"></div>
+
+    <!-- Login/Register Modal -->
+    <div id="authModal" class="modal show">
+        <div class="modal-content">
+            <h2 id="authTitle">Login</h2>
+            <form id="authForm">
+                <!-- Error message container -->
+                <div id="errorContainer" class="error-message" style="display: none;"></div>
+                
+                <div id="emailField" class="form-group" style="display: none;">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email">
+                    <div class="field-error" id="emailError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                    <div class="password-requirements" id="usernameRequirements">
+                        Username must be at least 3 characters long
+                    </div>
+                    <div class="field-error" id="usernameError"></div>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                    <div class="password-requirements" id="passwordRequirements">
+                        Password must be at least 6 characters long
+                    </div>
+                    <div class="field-error" id="passwordError"></div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" id="authButton">Login</button>
+                </div>
+                <div class="form-group">
+                    <button type="button" id="toggleAuth">Don't have an account? Register</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Chat Interface -->
+    <div id="chatContainer" class="chat-container" style="display: none;">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="user-info">
+                <div class="user-details">
+                    <h3 id="userDisplay"></h3>
+                    <span id="userEmail"></span>
+                </div>
+                <button id="logoutBtn" class="btn-danger">Logout</button>
+            </div>
+
+            <!-- User List for Direct Messages -->
+            <div class="section">
+                <div class="section-header">
+                    <h4>Users</h4>
+                    <button id="refreshUsersBtn" class="btn-small">↻</button>
+                </div>
+                <ul id="usersList" class="users-list"></ul>
+            </div>
+
+            <!-- Message Type Selector -->
+            <div class="section">
+                <div class="section-header">
+                    <h4>Message Type</h4>
+                </div>
+                <div class="message-type-selector">
+                    <label>
+                        <input type="radio" name="messageType" value="direct" checked>
+                        Direct Message
+                    </label>
+                    <label>
+                        <input type="radio" name="messageType" value="broadcast">
+                        Broadcast
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="chat-main">
+            <div class="chat-header">
+                <h3 id="chatTitle">Select a user or broadcast</h3>
+                <div class="chat-controls">
+                    <button id="viewHistoryBtn" class="btn-secondary">View History</button>
+                    <select id="messageFilter">
+                        <option value="">All Messages</option>
+                        <option value="direct">Direct Only</option>
+                        <option value="broadcast">Broadcast Only</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="messages-container" id="messagesContainer">
+                <div id="messagesList"></div>
+            </div>
+
+            <div class="message-input-container">
+                <div class="media-preview" id="mediaPreview" style="display: none;"></div>
+                
+                <div class="message-input">
+                    <input type="file" id="fileInput" accept="image/*,video/*,audio/*,.pdf,.txt" style="display: none;">
+                    <button id="attachBtn" class="btn-icon" title="Attach Media">📎</button>
+                    <input type="text" id="messageInput" placeholder="Type your message..." disabled>
+                    <button id="sendBtn" class="btn-primary" disabled>Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message History Modal -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2>Message History</h2>
+                <button id="closeHistoryBtn" class="close-btn">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="history-controls">
+                    <select id="historyFilter">
+                        <option value="">All Messages</option>
+                        <option value="direct">Direct Messages</option>
+                        <option value="broadcast">Broadcasts</option>
+                    </select>
+                    <button id="loadHistoryBtn" class="btn-secondary">Load History</button>
+                </div>
+                <div id="historyList" class="history-messages"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

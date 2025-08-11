@@ -15,10 +15,18 @@ func main() {
 	defer CloseDB()
 
 
-	// Create Gin router
 	r := gin.Default()
 
 
+	// Configure CORS
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"http://localhost:3000", "http://localhost:8080", "*"}
+	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
+	config.AllowHeaders = []string{"Origin", "Content-Type", "Authorization"}
+	config.AllowCredentials = true
+	r.Use(cors.New(config))
+
+	// Health check endpoint
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, ApiResponse{
 			Success: true,
@@ -30,12 +38,14 @@ func main() {
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, ApiResponse{
 			Success: true,
-			Message: "Chat API Server",
+			Message: "Chat API Server - Please access the frontend at http://localhost:3000",
 			Data: map[string]string{
-				"api_docs":     "http://localhost:8080/api"
+				"frontend_url": "http://localhost:3000",
+				"api_docs":     "http://localhost:8080/api",
 			},
 		})
 	})
+
 
 	api := r.Group("/api")
 	{

@@ -172,7 +172,14 @@ class ChatApp {
             }
         } catch (error) {
             console.error('Auth error:', error);
-            this.showFormError('Network connection failed. Please check your internet connection and try again.');
+            if (error.message == 'Failed to fetch' || error.name == 'TypeError'){
+                this.showFormError('Unable to connect to the server')
+            } else if (error.message.includes('Authentication failed')){
+                this.showFormError('Session Expired, Try again')
+
+            } else{
+                this.showFormError('Unexpected Error Occurred, Try again')
+            }
         }
     }
 
@@ -469,7 +476,7 @@ class ChatApp {
             if (response.success) {
                 this.displayMessages(response.data);
             } else {
-                this.showError('Failed to load conversation');
+                this.displayMessages('Failed to load conversation');
             }
         } catch (error) {
             console.error('Error loading conversation:', error);
@@ -733,7 +740,7 @@ class ChatApp {
             const response = await fetch(url, { ...defaultOptions, ...options });
             
             // Handle authentication errors
-            if (response.status === 401) {
+            if (response.status === 401 && !endpoint.includes('/auth/')) {
                 this.handleInvalidAuth();
                 throw new Error('Authentication failed');
             }

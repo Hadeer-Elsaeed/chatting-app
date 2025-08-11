@@ -280,9 +280,10 @@ func (h *MessageHandler) GetConversation(c *gin.Context) {
 
 	rows, err := h.db.Query(query, userID, otherUserID, otherUserID, userID, limit, offset)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, ApiResponse{
-			Success: false,
-			Error:   "Failed to fetch conversation",
+		c.JSON(http.StatusOK, ApiResponse{
+			Success: true,
+			Data: [] Message {},
+			Message:   "No Conversation found",
 		})
 		return
 	}

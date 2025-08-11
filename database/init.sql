@@ -64,3 +64,15 @@ INSERT INTO message_recipients (message_id, recipient_id) VALUES
 (4, 1), -- Broadcast to John
 (4, 2), -- Broadcast to Jane
 (4, 4); -- Broadcast to Alice
+
+
+-- Messages table indexes
+ALTER TABLE messages ADD INDEX idx_message_type (message_type);
+ALTER TABLE messages ADD INDEX idx_sender_type_created (sender_id, message_type, created_at);
+
+-- Message Recipients table indexes  
+ALTER TABLE message_recipients ADD INDEX idx_recipient_read (recipient_id, is_read);
+ALTER TABLE message_recipients ADD INDEX idx_recipient_read_created (recipient_id, is_read, created_at);
+
+-- Users table additional indexes
+ALTER TABLE users ADD INDEX idx_users_created_at (created_at);

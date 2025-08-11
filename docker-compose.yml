@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: chat_mysql
+    environment:
+      MYSQL_DATABASE: chatapp
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - chat_network
+
+  web-server:
+    build:
+      context: ./web-server
+      dockerfile: Dockerfile
+    container_name: chat_web_server
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_NAME=chatapp
+      - UPLOAD_DIR=/app/uploads
+      - PORT=8080
+      - WEBSOCKET_SERVER_URL=http://websocket-server:8081
+      - RATE_LIMIT_MAX_REQUESTS=30
+      - RATE_LIMIT_WINDOW_MINUTES=1
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - chat_network
+    restart: unless-stopped
+
+  web-client:
+    build:
+      context: ./web-client
+      dockerfile: Dockerfile
+    container_name: chat_web_client
+    ports:
+      - "3000:80"
+    depends_on:
+      - web-server
+    networks:
+      - chat_network
+    restart: unless-stopped
+
+  websocket-server:
+    build:
+      context: ./websocket-server
+      dockerfile: Dockerfile
+    container_name: chat_websocket_server
+    ports:
+      - "8081:8081"
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_NAME=chatapp
+      - PORT=8081
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - chat_network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+
+networks:
+  chat_network:
+    driver: bridge

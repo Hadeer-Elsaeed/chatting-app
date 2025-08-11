@@ -6,8 +6,9 @@ services:
     image: mysql:8.0
     container_name: chat_mysql
     environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: chatapp
-      MYSQL_USER: root
+      MYSQL_USER: user
       MYSQL_PASSWORD: root
     ports:
       - "3306:3306"
@@ -16,6 +17,10 @@ services:
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - chat_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
 
   web-server:
     build:
@@ -27,7 +32,7 @@ services:
     environment:
       - DB_HOST=mysql
       - DB_PORT=3306
-      - DB_USER=root
+      - DB_USER=user
       - DB_PASSWORD=root
       - DB_NAME=chatapp
       - UPLOAD_DIR=/app/uploads
@@ -67,7 +72,7 @@ services:
     environment:
       - DB_HOST=mysql
       - DB_PORT=3306
-      - DB_USER=root
+      - DB_USER=user
       - DB_PASSWORD=root
       - DB_NAME=chatapp
       - PORT=8081

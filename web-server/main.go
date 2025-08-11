@@ -17,6 +17,9 @@ func main() {
 
 	r := gin.Default()
 
+	authHandler := NewAuthHandler(GetDB())
+	messageHandler := NewMessageHandler(GetDB())
+	mediaHandler := NewMediaHandler()
 
 	// Configure CORS
 	config := cors.DefaultConfig()

@@ -1,1 +1,3 @@
 # chatting-app
+
+# Architecture

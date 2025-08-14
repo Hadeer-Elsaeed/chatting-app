@@ -1,0 +1,411 @@
+{
+	"info": {
+		"_postman_id": "12345678-1234-1234-1234-123456789012",
+		"name": "Chat Application API",
+		"description": "Complete API collection for the Go-based chat application with authentication, messaging, media upload, and user management.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"john_doe\",\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new user account. Password must be at least 6 characters and username at least 3 characters."
+					},
+					"response": []
+				},
+				{
+					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.success && response.data.token) {",
+									"        pm.environment.set('authToken', response.data.token);",
+									"        pm.environment.set('currentUserId', response.data.user.id);",
+									"        pm.environment.set('currentUsername', response.data.user.username);",
+									"        console.log('Token saved:', response.data.token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"john_doe\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with username and password. This will automatically save the JWT token for subsequent requests."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auth/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"profile"
+							]
+						},
+						"description": "Get current user's profile information."
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints for user registration, login, and profile management."
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get All Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.success && response.data.users.length > 0) {",
+									"        // Save first other user's ID for messaging tests",
+									"        const currentUserId = pm.environment.get('currentUserId');",
+									"        const otherUser = response.data.users.find(user => user.id != currentUserId);",
+									"        if (otherUser) {",
+									"            pm.environment.set('targetUserId', otherUser.id);",
+									"            pm.environment.set('targetUsername', otherUser.username);",
+									"            console.log('Target user saved:', otherUser.username);",
+									"        }",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						},
+						"description": "Get list of all users (excluding current user) for selecting message recipients."
+					},
+					"response": []
+				}
+			],
+			"description": "User management endpoints."
+		},
+		{
+			"name": "Messages",
+			"item": [
+				{
+					"name": "Send Direct Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"Hello! This is a direct message.\",\n    \"message_type\": \"direct\",\n    \"recipients\": [{{targetUserId}}],\n    \"media_url\": null,\n    \"media_type\": null\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/messages",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"messages"
+							]
+						},
+						"description": "Send a direct message to specific users. Use the targetUserId from the Get All Users request."
+					},
+					"response": []
+				},
+				{
+					"name": "Send Broadcast Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"Hello everyone! This is a broadcast message to all users.\",\n    \"message_type\": \"broadcast\",\n    \"recipients\": [],\n    \"media_url\": null,\n    \"media_type\": null\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/messages",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"messages"
+							]
+						},
+						"description": "Send a broadcast message to all users. Recipients array should be empty for broadcast."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Message History",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/messages?limit=50&type=all",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"messages"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "50",
+									"description": "Number of messages to retrieve (default: 50)"
+								},
+								{
+									"key": "type",
+									"value": "all",
+									"description": "Message type filter: 'all', 'direct', 'broadcast'"
+								}
+							]
+						},
+						"description": "Get message history with optional filtering by type and limit."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Conversation with User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/conversations/{{targetUserId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"conversations",
+								"{{targetUserId}}"
+							]
+						},
+						"description": "Get conversation history between current user and a specific user."
+					},
+					"response": []
+				}
+			],
+			"description": "Messaging endpoints for sending and retrieving messages."
+		},
+		{
+			"name": "Media Upload",
+			"item": [
+				{
+					"name": "Upload Media File",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.success && response.data.url) {",
+									"        pm.environment.set('uploadedMediaUrl', response.data.url);",
+									"        pm.environment.set('uploadedMediaType', response.data.media_type);",
+									"        console.log('Media uploaded:', response.data.url);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": [],
+									"description": "Select an image, video, audio, or document file (max 10MB)"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/media/upload",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"media",
+								"upload"
+							]
+						},
+						"description": "Upload a media file. Supports images, videos, audio, and documents up to 10MB."
+					},
+					"response": []
+				},
+				{
+					"name": "Send Message with Media",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{authToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"content\": \"Check out this media file!\",\n    \"message_type\": \"direct\",\n    \"recipients\": [{{targetUserId}}],\n    \"media_url\": \"{{uploadedMediaUrl}}\",\n    \"media_type\": \"{{uploadedMediaType}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/messages",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"messages"
+							]
+						},
+						"description": "Send a message with attached media. First upload media using the Upload Media File endpoint."
+					},
+					"response": []
+				}
+			],
+			"description": "Media upload and media messaging endpoints."
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080/api",
+			"type": "string"
+		}
+	]
+}

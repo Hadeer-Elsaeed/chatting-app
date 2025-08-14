@@ -1,6 +1,6 @@
 # Real-Time Chat Application
 
-A production-ready real-time messaging platform built with Go, MySQL, and WebSockets. Features secure authentication, direct messaging, broadcast capabilities, and media sharing with a clean, responsive web interface.
+A real-time messaging platform built with Go, MySQL, and WebSockets. Features secure authentication, direct messaging, broadcast capabilities, and media sharing.
 
 ## Architecture Overview
 
@@ -165,10 +165,10 @@ Content-Type: application/json
 
 {
   "content": "Hello everyone!",
-  "message_type": "broadcast", // or "direct"
-  "recipients": [2, 3], // required for direct messages
-  "media_url": "", // optional
-  "media_type": "" // optional
+  "message_type": "broadcast",
+  "recipients": [2, 3],
+  "media_url": "",
+  "media_type": ""
 }
 ```
 
@@ -214,55 +214,6 @@ Authorization: Bearer <token>
 ```http
 GET /api/media/{user_dir}/{filename}
 ```
-
-### WebSocket Connection
-```javascript
-// Connect to WebSocket server with JWT authentication
-const token = localStorage.getItem('token');
-const ws = new WebSocket(`ws://localhost:8081/ws?token=${token}`);
-
-ws.onopen = function() {
-  console.log('Connected to WebSocket server');
-};
-
-ws.onmessage = function(event) {
-  const message = JSON.parse(event.data);
-  console.log('Received:', message);
-};
-
-ws.onerror = function(error) {
-  console.error('WebSocket error:', error);
-};
-
-// Send message through WebSocket
-ws.send(JSON.stringify({
-  type: 'message',
-  content: 'Hello WebSocket!',
-  message_type: 'broadcast', // or 'direct'
-  recipients: [2, 3] // required for direct messages
-}));
-```
-
-#### WebSocket Message Format
-**Incoming Message:**
-```json
-{
-  "type": "message",
-  "data": {
-    "id": 1,
-    "content": "Hello!",
-    "sender_username": "john_doe",
-    "sender_id": 1,
-    "message_type": "broadcast",
-    "recipients": [],
-    "created_at": "2025-08-14T21:00:00Z",
-    "media_url": "",
-    "media_type": ""
-  }
-}
-```
-
-**Authentication:** JWT token required via query parameter `?token=<jwt_token>`
 
 ## Testing
 

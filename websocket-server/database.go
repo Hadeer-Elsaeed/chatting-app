@@ -29,7 +29,6 @@ func InitDB() (*sql.DB, error) {
 		dbUser, dbPassword, dbHost, dbPort, dbName)
 
 	var err error
-	// Retry connection with exponential backoff
 	for i := 0; i < 10; i++ {
 		db, err = sql.Open("mysql", dsn)
 		if err != nil {

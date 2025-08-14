@@ -141,7 +141,7 @@ func (h *MessageHandler) SendMessage(c *gin.Context) {
 			}
 		}
 	}
-	
+
 	go NotifyWebSocketServer(message, recipientIDs)
 
 	c.JSON(http.StatusCreated, ApiResponse{
@@ -172,7 +172,7 @@ func (h *MessageHandler) GetMessageHistory(c *gin.Context) {
 		FROM messages m
 		JOIN users u ON m.sender_id = u.id
 		LEFT JOIN message_recipients mr ON m.id = mr.message_id
-		WHERE mr.recipient_id = ? OR m.sender_id = ?
+		WHERE (mr.recipient_id = ? OR m.sender_id = ?)
 	`
 
 	args := []interface{}{userID, userID}
@@ -211,8 +211,8 @@ func (h *MessageHandler) GetMessageHistory(c *gin.Context) {
 	countQuery := `
 		SELECT COUNT(DISTINCT m.id)
 		FROM messages m
-		JOIN message_recipients mr ON m.id = mr.message_id
-		WHERE mr.recipient_id = ? OR m.sender_id = ?
+		LEFT JOIN message_recipients mr ON m.id = mr.message_id
+		WHERE (mr.recipient_id = ? OR m.sender_id = ?)
 	`
 
 	countArgs := []interface{}{userID, userID}
@@ -242,7 +242,7 @@ func (h *MessageHandler) GetMessageHistory(c *gin.Context) {
 func (h *MessageHandler) GetConversation(c *gin.Context) {
 	userID, _, _ := GetUserFromContext(c)
 	otherUserIDStr := c.Param("user_id")
-	
+
 	otherUserID, err := strconv.Atoi(otherUserIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ApiResponse{
@@ -282,8 +282,8 @@ func (h *MessageHandler) GetConversation(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusOK, ApiResponse{
 			Success: true,
-			Data: [] Message {},
-			Message:   "No Conversation found",
+			Data:    []Message{},
+			Message: "No Conversation found",
 		})
 		return
 	}
@@ -316,7 +316,7 @@ func (h *MessageHandler) GetConversation(c *gin.Context) {
 func (h *MessageHandler) MarkAsRead(c *gin.Context) {
 	userID, _, _ := GetUserFromContext(c)
 	messageIDsStr := c.Query("message_ids")
-	
+
 	if messageIDsStr == "" {
 		c.JSON(http.StatusBadRequest, ApiResponse{
 			Success: false,
@@ -327,7 +327,7 @@ func (h *MessageHandler) MarkAsRead(c *gin.Context) {
 
 	messageIDStrs := strings.Split(messageIDsStr, ",")
 	messageIDs := make([]interface{}, len(messageIDStrs))
-	
+
 	for i, idStr := range messageIDStrs {
 		id, err := strconv.Atoi(strings.TrimSpace(idStr))
 		if err != nil {
@@ -346,7 +346,7 @@ func (h *MessageHandler) MarkAsRead(c *gin.Context) {
 			  WHERE recipient_id = ? AND message_id IN (` + placeholders + `)`
 
 	args := append([]interface{}{userID}, messageIDs...)
-	
+
 	_, err := h.db.Exec(query, args...)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ApiResponse{
